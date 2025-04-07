@@ -6,6 +6,10 @@ Aplicación principal de Nova - Interfaz web con Flask
 Integra todos los módulos (IA, voz, memoria, avatar) en una interfaz interactiva
 """
 
+# Cargar variables de entorno desde .env
+from dotenv import load_dotenv
+load_dotenv()
+
 import json
 import logging
 import os
@@ -13,7 +17,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Union
 
-from flask import Flask, render_template, request, jsonify, session
+from flask import Flask, render_template, request, jsonify, session, send_from_directory
 from flask_socketio import SocketIO, emit
 
 from nova.backend.ai_handler import OllamaHandler
@@ -33,7 +37,10 @@ logger = logging.getLogger('nova.interface')
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'nova_secret_key')
 app.config['TEMPLATES_AUTO_RELOAD'] = True
-socketio = SocketIO(app, cors_allowed_origins="*")
+
+# Configurar SocketIO con opciones adecuadas para entornos serverless
+async_mode = 'eventlet' if not os.environ.get('VERCEL', '0') == '1' else None
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode=async_mode)
 
 # Configuración de rutas de archivos
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -47,13 +54,32 @@ DATA_DIR.mkdir(exist_ok=True)
 (DATA_DIR / 'temp').mkdir(exist_ok=True)
 
 # Inicializar componentes de Nova
+# Verificar si estamos en entorno de Vercel
+is_vercel = os.environ.get('VERCEL', '0') == '1'
+
+# Configurar URL de Ollama según el entorno
+if is_vercel:
+    # En Vercel, usamos una API externa para Ollama
+    ollama_api_url = os.environ.get('OLLAMA_API_URL', 'http://92.177.226.9:11434/api/chat')
+    logger.info(f"Ejecutando en Vercel, usando API externa: {ollama_api_url}")
+else:
+    # En desarrollo local, intentamos primero localhost
+    ollama_api_url = "http://92.177.226.9:11434/api/chat"
+
 ai_handler = OllamaHandler(
-    api_url="http://92.177.226.9:11434/api/chat",
+    api_url=ollama_api_url,
     model_name="openchat"  # Utilizando el modelo OpenChat
 )
 personality = NovaPersonality()
-speech_to_text = SpeechToText(model_size="base", language="es")
-text_to_speech = TextToSpeech(language="es")
+
+# En Vercel, deshabilitamos los componentes de voz que requieren hardware local
+if not is_vercel:
+    speech_to_text = SpeechToText(model_size="base", language="es")
+    text_to_speech = TextToSpeech(language="es")
+else:
+    speech_to_text = None
+    text_to_speech = None
+
 memory_manager = MemoryManager(db_path=str(DATA_DIR / "memory.db"))
 
 # Variables globales para la sesión actual
@@ -111,13 +137,16 @@ def send_message():
     current_session["conversation_history"].append({"user": user_message, "nova": nova_response})
     current_session["last_response"] = nova_response
     
-    # Generar audio de respuesta
-    audio_path = str(DATA_DIR / "audio" / f"response_{int(datetime.now().timestamp())}.wav")
-    text_to_speech.save_to_file(nova_response, audio_path)
+    # Generar audio de respuesta solo si no estamos en Vercel y el componente está disponible
+    audio_url = None
+    if not is_vercel and text_to_speech is not None:
+        audio_path = str(DATA_DIR / "audio" / f"response_{int(datetime.now().timestamp())}.wav")
+        text_to_speech.save_to_file(nova_response, audio_path)
+        audio_url = f"/audio/{os.path.basename(audio_path)}"
     
     return jsonify({
         "response": nova_response,
-        "audio_url": f"/audio/{os.path.basename(audio_path)}"
+        "audio_url": audio_url
     })
 
 @app.route('/api/start_listening', methods=['POST'])
@@ -125,6 +154,10 @@ def start_listening():
     """Inicia la escucha del micrófono"""
     if current_session["is_listening"]:
         return jsonify({"status": "already_listening"})
+    
+    # Verificar si estamos en Vercel o si el componente de voz no está disponible
+    if is_vercel or speech_to_text is None:
+        return jsonify({"status": "error", "message": "Speech recognition not available in this environment"})
     
     def speech_callback(text):
         """Callback para cuando se detecta texto en el audio"""
@@ -140,6 +173,11 @@ def stop_listening():
     """Detiene la escucha del micrófono"""
     if not current_session["is_listening"]:
         return jsonify({"status": "not_listening"})
+    
+    # Verificar si estamos en Vercel o si el componente de voz no está disponible
+    if is_vercel or speech_to_text is None:
+        current_session["is_listening"] = False
+        return jsonify({"status": "stopped", "message": "Speech recognition not available in this environment"})
     
     speech_to_text.stop_listening()
     current_session["is_listening"] = False
@@ -163,6 +201,9 @@ def clear_conversation():
 @app.route('/audio/<filename>')
 def serve_audio(filename):
     """Sirve archivos de audio generados"""
+    # En Vercel, este endpoint no funcionará para archivos generados dinámicamente
+    if is_vercel:
+        return jsonify({"error": "Audio files not available in this environment"}), 404
     return send_from_directory(str(DATA_DIR / "audio"), filename)
 
 @socketio.on('connect')

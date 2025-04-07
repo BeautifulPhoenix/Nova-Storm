@@ -47,7 +47,7 @@ Nova es un proyecto de asistente virtual con personalidad, que integra múltiple
 
 ```bash
 # Clonar el repositorio
-git clone [url-del-repositorio]
+git clone github.com/BeatifulPhoenix/Nova-Storm
 cd nova
 
 # Instalar dependencias
