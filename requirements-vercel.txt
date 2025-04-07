@@ -4,11 +4,12 @@
 requests>=2.28.0    # Para comunicación con Ollama API
 
 # Procesamiento de datos
-numpy>=1.22.0      # Procesamiento de arrays
+numpy>=1.21.0,<1.22.0  # Versión compatible con Python 3.9
 
 # Memoria emocional
-sqlite3-utils>=0.1  # Para base de datos local
-pandas>=1.5.0      # Para procesamiento de datos
+# sqlite-utils no está disponible en Vercel con Python 3.12
+# Usando sqlite3 estándar que viene con Python
+pandas>=1.5.0,<2.0.0  # Versión compatible con Python 3.9
 
 # Interfaz visual
 flask>=2.2.0       # Servidor web para la interfaz
