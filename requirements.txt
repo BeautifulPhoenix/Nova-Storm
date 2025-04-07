@@ -1,0 +1,27 @@
+# Dependencias principales para Nova - Asistente Virtual IA
+
+# Backend IA
+requests>=2.28.0    # Para comunicación con Ollama API
+
+# Procesamiento de voz
+faster-whisper>=0.6.0  # Para reconocimiento de voz (STT)
+pyaudio>=0.2.13        # Para captura de audio del micrófono
+TTS>=0.14.0            # Coqui TTS para síntesis de voz
+numpy>=1.22.0          # Procesamiento de arrays para audio
+
+# Memoria emocional
+sqlite3-utils>=0.1     # Para base de datos local
+pandas>=1.5.0          # Para procesamiento de datos
+
+# Interfaz visual
+flask>=2.2.0           # Servidor web para la interfaz
+flask-socketio>=5.3.0  # Comunicación en tiempo real
+
+# Avatar 3D
+pyglet>=2.0.0          # Para renderizado 3D (alternativa: three.js vía web)
+python-vlc>=3.0.16120  # Para reproducción de audio (alternativa)
+
+# Utilidades
+python-dotenv>=0.21.0  # Para gestión de variables de entorno
+tqdm>=4.64.0           # Barras de progreso para operaciones largas
+colorlog>=6.7.0        # Logging con colores para depuración

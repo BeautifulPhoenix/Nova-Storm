@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nova - Tu Asistente</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three-vrm@latest/dist/three-vrm.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/loaders/GLTFLoader.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Nova</h1>
+            <p class="subtitle">Tu compañera virtual</p>
+        </header>
+        
+        <main>
+            <div class="chat-container">
+                <div class="avatar-container" id="avatar-container">
+                    <!-- Aquí se renderizará el avatar 3D -->
+                </div>
+                
+                <div class="messages-container" id="messages">
+                    <!-- Aquí se mostrarán los mensajes -->
+                    <div class="message nova-message">
+                        <div class="message-content">Hola, soy Nova. ¿Cómo estás hoy?</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="input-container">
+                <textarea id="user-input" placeholder="Escribe tu mensaje aquí..."></textarea>
+                <div class="controls">
+                    <button id="send-btn" class="btn">Enviar</button>
+                    <button id="voice-btn" class="btn">🎤</button>
+                    <div id="voice-indicator" class="voice-indicator">Escuchando...</div>
+                </div>
+            </div>
+        </main>
+        
+        <footer>
+            <p>Nova - Desarrollada con ❤️</p>
+        </footer>
+    </div>
+
+    <audio id="audio-player" style="display: none;"></audio>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/avatar.js') }}"></script>
+</body>
+</html>
