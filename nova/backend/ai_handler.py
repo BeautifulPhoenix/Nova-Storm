@@ -43,7 +43,7 @@ class OllamaHandler:
             
         # Si falla, intentar con la IP alternativa
         if 'localhost' in self.api_url:
-            alt_api_url = self.api_url.replace('localhost', '92.177.226.9')
+            alt_api_url = self.api_url.replace('localhost', 'localhost')
             logger.info(f"Intentando conexión alternativa con: {alt_api_url}")
             
             # Guardar la URL original
