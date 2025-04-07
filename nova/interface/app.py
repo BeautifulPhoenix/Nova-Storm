@@ -48,7 +48,7 @@ DATA_DIR.mkdir(exist_ok=True)
 
 # Inicializar componentes de Nova
 ai_handler = OllamaHandler(
-    api_url="http://localhost:11434/api/chat",
+    api_url="http://92.177.226.9:11434/api/chat",
     model_name="openchat"  # Utilizando el modelo OpenChat
 )
 personality = NovaPersonality()
