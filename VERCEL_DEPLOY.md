@@ -28,7 +28,7 @@ Al desplegar Nova Storm en Vercel, existen las siguientes limitaciones:
 
 Configura las siguientes variables de entorno en el dashboard de Vercel:
 
-- `OLLAMA_API_URL`: URL de la API de Ollama (ej: http://92.177.226.9:11434/api/chat)
+- `OLLAMA_API_URL`: URL de la API de Ollama (ej: http://URLAPI:11434/api/chat)
 - `SECRET_KEY`: Clave secreta para Flask
 - `VERCEL`: Establecer a "1" para indicar que estamos en entorno de Vercel
 
